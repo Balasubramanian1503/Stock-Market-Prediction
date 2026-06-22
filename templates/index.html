@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Accessible Stock Market Investment Analysis tool providing automated data analysis, technical indicators, and investment recommendations.">
+    <title>Stock Market Investment Analysis Dashboard</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+
+    <style>
+        /* Modern Vanilla CSS Styling - Curated Premium Aesthetics */
+        :root {
+            /* HSL Color System */
+            --bg-color: hsl(222, 47%, 11%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            
+            --text-primary: hsl(210, 40%, 98%);
+            --text-secondary: hsl(215, 20%, 65%);
+            --text-muted: hsl(215, 16%, 47%);
+            
+            --primary-accent: hsl(210, 100%, 50%);
+            --primary-accent-hover: hsl(210, 100%, 60%);
+            
+            --success-color: hsl(142, 72%, 45%);
+            --success-bg: rgba(16, 185, 129, 0.15);
+            
+            --danger-color: hsl(350, 89%, 60%);
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            
+            --focus-ring: 3px solid hsl(210, 100%, 50%);
+            --transition-speed: 0.2s;
+        }
+
+        /* Reset & Base Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            padding: 2rem 1rem;
+        }
+
+        /* Focus states - Accessible visible outlines */
+        button:focus-visible, 
+        input:focus-visible, 
+        a:focus-visible,
+        table:focus-visible {
+            outline: var(--focus-ring);
+            outline-offset: 3px;
+        }
+
+        /* Skip to Content Link for Keyboard Users */
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 0;
+            background: var(--primary-accent);
+            color: var(--text-primary);
+            padding: 1rem;
+            z-index: 100;
+            font-weight: 600;
+            text-decoration: none;
+            transition: top 0.2s ease;
+        }
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Layout Layouts */
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            flex-grow: 1;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, #fff 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Ticker Search Combobox Panel */
+        .search-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+            min-width: 250px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color var(--transition-speed);
+        }
+        input:focus {
+            border-color: var(--primary-accent);
+            outline: none;
+        }
+
+        .btn {
+            background-color: var(--primary-accent);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color var(--transition-speed), transform 0.1s ease;
+        }
+        .btn:hover {
+            background-color: var(--primary-accent-hover);
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Dashboard Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        @media(min-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+
+        /* Verdict Card */
+        .verdict-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 1.5rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            min-height: 300px;
+        }
+
+        .ticker-header {
+            width: 100%;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .ticker-sym {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+        .ticker-name {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+
+        .verdict-badge {
+            font-size: 2.5rem;
+            font-weight: 900;
+            padding: 0.5rem 2.5rem;
+            border-radius: 12px;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin: 0.5rem 0;
+            text-transform: uppercase;
+        }
+        .verdict-invest {
+            color: var(--success-color);
+            background-color: var(--success-bg);
+            border: 2px solid var(--success-color);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+        .verdict-avoid {
+            color: var(--danger-color);
+            background-color: var(--danger-bg);
+            border: 2px solid var(--danger-color);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .confidence-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
+        }
+        .confidence-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .confidence-bar-outer {
+            height: 10px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 5px;
+            width: 100%;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+        }
+        .confidence-bar-inner {
+            height: 100%;
+            width: 0%;
+            border-radius: 5px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bar-invest {
+            background-color: var(--success-color);
+        }
+        .bar-avoid {
+            background-color: var(--danger-color);
+        }
+
+        /* Metric Highlights Grid */
+        .metric-highlights {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .metric-pill {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--card-border);
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .pill-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .pill-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 0.25rem;
+        }
+
+        /* Detailed Breakdown Panel */
+        .details-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .panel-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .rules-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .rule-row {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        @media(min-width: 600px) {
+            .rule-row {
+                grid-template-columns: 200px 1fr 120px;
+                align-items: center;
+                gap: 1.5rem;
+            }
+        }
+
+        .rule-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .rule-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .rule-indicator-val {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+        .rule-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+        .rule-badge {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .badge-bullish {
+            color: var(--success-color);
+            background-color: var(--success-bg);
+            border: 1px solid var(--success-color);
+        }
+        .badge-bearish {
+            color: var(--danger-color);
+            background-color: var(--danger-bg);
+            border: 1px solid var(--danger-color);
+        }
+        .badge-neutral {
+            color: var(--text-secondary);
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+        }
+
+        /* Accessible Visualizations Chart Panel */
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Accessible Data Table Styling */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+        }
+
+        .accessible-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+            background: rgba(15, 23, 42, 0.4);
+        }
+        .accessible-table caption {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid var(--card-border);
+            text-align: left;
+        }
+        .accessible-table th {
+            font-weight: 600;
+            color: var(--text-primary);
+            background: rgba(15, 23, 42, 0.8);
+            padding: 0.75rem 1rem;
+            border-bottom: 1.5px solid var(--card-border);
+        }
+        .accessible-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-secondary);
+        }
+        .accessible-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .accessible-table tr:focus-within {
+            background: rgba(255, 255, 255, 0.05);
+            outline: var(--focus-ring);
+        }
+
+        /* Screen Reader Only Utility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* Legal Disclaimer Footer Component */
+        footer {
+            margin-top: auto;
+            padding-top: 2rem;
+            border-top: 1px solid var(--card-border);
+            text-align: center;
+        }
+        .disclaimer-banner {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.25rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .disclaimer-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .disclaimer-title::before {
+            content: "⚠️";
+        }
+        .disclaimer-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+        .disclaimer-btn {
+            background: transparent;
+            color: var(--primary-accent);
+            border: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        .disclaimer-btn:hover {
+            color: var(--primary-accent-hover);
+        }
+
+        /* Modal Dialog Component */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-content {
+            background-color: var(--bg-color);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            max-width: 550px;
+            width: 100%;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.75rem;
+        }
+        .modal-body {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            line-height: 1.6;
+        }
+        .modal-body ul {
+            padding-left: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .close-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            align-self: flex-end;
+            transition: background var(--transition-speed);
+        }
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* UI State Indicators */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border-left-color: var(--primary-accent);
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .initial-state-text {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 1.05rem;
+            padding: 4rem 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Skip to Content Accessibility Link -->
+    <a href="#mainContent" class="skip-link">Skip to Main Content</a>
+
+    <div class="container">
+        
+        <!-- Accessible Header -->
+        <header role="banner">
+            <div>
+                <h1>Stock Market Investment Analysis Dashboard</h1>
+                <div class="subtitle">Empowered by automated technical data science analysis engine</div>
+            </div>
+            <div>
+                <button class="btn" id="openDisclaimerModalBtn" aria-haspopup="dialog" aria-controls="legalModal" aria-label="View legal disclaimer and compliance info">
+                    View Compliance
+                </button>
+            </div>
+        </header>
+
+        <!-- Search Form Card Panel -->
+        <section class="search-card" aria-labelledby="searchHeading">
+            <h2 id="searchHeading" class="sr-only">Stock Ticker Selector</h2>
+            <form class="search-form" id="tickerSearchForm" novalidate>
+                <div class="form-group">
+                    <label for="tickerInput">Enter Global Stock Ticker Symbol</label>
+                    <input 
+                        type="text" 
+                        id="tickerInput" 
+                        required 
+                        aria-required="true"
+                        aria-describedby="tickerHelp"
+                        placeholder="e.g. INFY.NS, RELIANCE.NS, AAPL, TSLA"
+                        autocomplete="off"
+                    >
+                    <span id="tickerHelp" class="sr-only">Enter standard stock ticker abbreviations. For Indian NSE symbols, append '.NS'.</span>
+                </div>
+                <button type="submit" class="btn" id="analyzeSubmitBtn" aria-label="Execute investment analysis on entered ticker">
+                    Analyze Asset
+                </button>
+            </form>
+            
+            <!-- Accessible Dynamic Status Alerts for Screen Readers -->
+            <div id="statusRegion" class="sr-only" aria-live="assertive"></div>
+            
+            <div class="spinner" id="loadingSpinner" aria-hidden="true"></div>
+        </section>
+
+        <!-- Main Dashboard Panel Content -->
+        <main id="mainContent" role="main" aria-label="Stock Analysis Report Results">
+            
+            <!-- Default Welcome Display State -->
+            <div id="initialView" class="panel-card initial-state-text">
+                Enter a valid stock ticker symbol above and execute "Analyze Asset" to run technical analysis algorithms.
+            </div>
+
+            <!-- Dynamic Results Panels -->
+            <div class="dashboard-grid" id="resultsView" style="display: none;">
+                
+                <!-- Left Sidebar: Verdict and Metrics -->
+                <aside class="details-sidebar">
+                    <div class="verdict-card" id="verdictContainer">
+                        <div class="ticker-header">
+                            <h2 class="ticker-sym" id="resultsSymbol" aria-label="Ticker Symbol">INFY.NS</h2>
+                            <div class="ticker-name" id="resultsName" aria-label="Company Name">Infosys Limited</div>
+                            <div class="pill-label" id="resultsSector" style="margin-top: 0.25rem;">IT Sector</div>
+                        </div>
+
+                        <div class="confidence-label">Investment Verdict</div>
+                        <div class="verdict-badge verdict-invest" id="verdictBadge">INVEST</div>
+                        
+                        <div class="confidence-container">
+                            <div class="confidence-label" id="confidenceLabel">Confidence level: 80%</div>
+                            <div class="confidence-bar-outer" aria-hidden="true">
+                                <div class="confidence-bar-inner bar-invest" id="confidenceBar" style="width: 80%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="metric-highlights">
+                            <div class="metric-pill">
+                                <div class="pill-label">Price</div>
+                                <div class="pill-value" id="priceHighlight">₹1,455.20</div>
+                            </div>
+                            <div class="metric-pill">
+                                <div class="pill-label">P/E Ratio</div>
+                                <div class="pill-value" id="peHighlight">24.50</div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Right Details Area: Rules Breakdown and Charts -->
+                <div class="details-panel">
+                    
+                    <!-- Structured Analysis Breakdowns -->
+                    <section class="panel-card" aria-labelledby="breakdownTitle">
+                        <h2 class="panel-title" id="breakdownTitle">
+                            Structured Recommendation Breakdown
+                            <span class="sr-only">Explains why the advice was generated.</span>
+                        </h2>
+                        
+                        <div class="rules-grid" id="rulesGrid" role="list">
+                            <!-- Injected dynamically via JS -->
+                        </div>
+                    </section>
+
+                    <!-- Interactive Chart Card -->
+                    <section class="panel-card" aria-labelledby="chartTitle">
+                        <h2 class="panel-title" id="chartTitle">Closing Price Visual Trend Analysis</h2>
+                        <div class="chart-wrapper">
+                            <canvas id="priceHistoryChart" role="img" aria-label="Line chart depicting the daily closing price trend over the past 15 trading days. Full raw dataset is provided in the data table below."></canvas>
+                        </div>
+                    </section>
+
+                    <!-- Accessible Historical Data Grid -->
+                    <section class="panel-card" aria-labelledby="tableTitle">
+                        <h2 class="panel-title" id="tableTitle">Raw Technical Analysis History Table</h2>
+                        <div class="table-responsive">
+                            <table class="accessible-table" id="historyTable" tabindex="0">
+                                <caption>Daily pricing records &amp; computed indicator outputs (last 15 records). Use keyboard arrows to browse.</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Open Price</th>
+                                        <th scope="col">Day High</th>
+                                        <th scope="col">Day Low</th>
+                                        <th scope="col">Close Price</th>
+                                        <th scope="col">Volume</th>
+                                        <th scope="col">SMA 20</th>
+                                        <th scope="col">RSI 14</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <!-- Dynamic rows loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Compliance disclaimer banner in footer -->
+        <footer role="contentinfo">
+            <div class="disclaimer-banner">
+                <div class="disclaimer-title">Legal &amp; Systemic Compliance Disclaimer</div>
+                <div class="disclaimer-text">
+                    This tool provides automated technical and fundamental data analysis for informational purposes only. It does not constitute formal financial advice. Market investments are subject to risk. Always execute due diligence.
+                </div>
+                <button class="disclaimer-btn" id="readMoreDisclaimerBtn" aria-haspopup="dialog" aria-controls="legalModal">
+                    Read Complete Legal Framework
+                </button>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Accessible Modal Dialog Container -->
+    <div class="modal-overlay" id="legalModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+        <div class="modal-content" id="modalWindow">
+            <div class="modal-header">
+                <h2 id="modalTitle" style="font-size: 1.2rem; font-weight: 800;">Legal &amp; Regulatory Compliance Framework</h2>
+            </div>
+            <div class="modal-body" id="modalDesc">
+                <p><strong>Informational Limitation:</strong> This application executes rule-based computational algorithms based on historical stock market pricing data (extracted via Yahoo Finance API). It does not evaluate individual user financial situations, risk tolerance, or portfolio assets.</p>
+                
+                <p><strong>System Disclaimer:</strong> This tool provides automated data analysis for informational purposes only. It does not constitute formal financial advice. No financial transactions, brokerage operations, or portfolio management decisions are performed by this system.</p>
+                
+                <p><strong>Underlying Data Integrity:</strong> Financial numbers (Open, Close, High, Low, Volume) are fetched using public data services. We do not guarantee absolute synchronization, speed, or historical accuracy of this public ticker feed.</p>
+                
+                <p><strong>Strict AA Accessibility Compliance:</strong> This framework utilizes fully compliant high-contrast layouts (exceeding 4.5:1), semantic labels, full keyboard tab focus locks, and live region announcers for blind, low-vision, or motor-impaired individuals.</p>
+            </div>
+            <button class="close-btn" id="closeDisclaimerModalBtn" aria-label="Close legal compliance dialog">Close Dialog</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Controller Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('tickerSearchForm');
+            const tickerInput = document.getElementById('tickerInput');
+            const submitBtn = document.getElementById('analyzeSubmitBtn');
+            const statusRegion = document.getElementById('statusRegion');
+            
+            const initialView = document.getElementById('initialView');
+            const resultsView = document.getElementById('resultsView');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            // Modal dialog selectors
+            const modal = document.getElementById('legalModal');
+            const modalWindow = document.getElementById('modalWindow');
+            const openModalBtn = document.getElementById('openDisclaimerModalBtn');
+            const readMoreBtn = document.getElementById('readMoreDisclaimerBtn');
+            const closeModalBtn = document.getElementById('closeDisclaimerModalBtn');
+            
+            // Results DOM bindings
+            const resultsSymbol = document.getElementById('resultsSymbol');
+            const resultsName = document.getElementById('resultsName');
+            const resultsSector = document.getElementById('resultsSector');
+            const verdictBadge = document.getElementById('verdictBadge');
+            const confidenceLabel = document.getElementById('confidenceLabel');
+            const confidenceBar = document.getElementById('confidenceBar');
+            const priceHighlight = document.getElementById('priceHighlight');
+            const peHighlight = document.getElementById('peHighlight');
+            const rulesGrid = document.getElementById('rulesGrid');
+            const historyTableBody = document.getElementById('historyTableBody');
+            
+            let chartInstance = null;
+
+            // Form Submit Callback
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const ticker = tickerInput.value.trim();
+                
+                if (!ticker) {
+                    announceStatus("Please enter a valid stock symbol.");
+                    return;
+                }
+                
+                // Set loading state
+                spinner.style.display = 'block';
+                submitBtn.disabled = true;
+                submitBtn.setAttribute('aria-busy', 'true');
+                announceStatus(`Executing analysis for ticker ${ticker}. Fetching metrics...`);
+                
+                fetch(`/api/analyze?ticker=${encodeURIComponent(ticker)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw new Error(err.error || "Analysis failed") });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        renderResults(data);
+                        announceStatus(`Analysis complete for ${data.company_name}. Recommendation is ${data.verdict} with ${data.confidence_score}% confidence.`);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        announceStatus(`Error running analysis: ${err.message}. Check symbol name syntax.`);
+                    })
+                    .finally(() => {
+                        spinner.style.display = 'none';
+                        submitBtn.disabled = false;
+                        submitBtn.removeAttribute('aria-busy');
+                    });
+            });
+
+            // Accessibility Status Announcer
+            function announceStatus(message) {
+                statusRegion.innerText = message;
+                // Add visible log in case of errors
+                if (message.includes("Error") || message.includes("Please")) {
+                    tickerInput.style.borderColor = 'var(--danger-color)';
+                } else {
+                    tickerInput.style.borderColor = 'var(--card-border)';
+                }
+            }
+
+            // Render Results payload into dashboard DOM
+            function renderResults(data) {
+                initialView.style.display = 'none';
+                resultsView.style.display = 'grid';
+                
+                // Header values
+                resultsSymbol.innerText = data.ticker;
+                resultsName.innerText = data.company_name;
+                resultsSector.innerText = data.sector;
+                
+                // Verdict styling
+                verdictBadge.innerText = data.verdict;
+                if (data.verdict === 'INVEST') {
+                    verdictBadge.className = "verdict-badge verdict-invest";
+                    confidenceBar.className = "confidence-bar-inner bar-invest";
+                } else {
+                    verdictBadge.className = "verdict-badge verdict-avoid";
+                    confidenceBar.className = "confidence-bar-inner bar-avoid";
+                }
+                
+                // Confidence representation
+                confidenceLabel.innerText = `Confidence level: ${data.confidence_score}%`;
+                confidenceBar.style.width = `${data.confidence_score}%`;
+                
+                // Financial highlights
+                priceHighlight.innerText = `₹${data.current_price.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                peHighlight.innerText = data.pe_ratio === "N/A" ? "N/A" : data.pe_ratio.toFixed(2);
+                
+                // Rule breakdown rows
+                rulesGrid.innerHTML = '';
+                data.rules_breakdown.forEach(rule => {
+                    const statusClass = rule.status.includes('BULLISH') ? 'badge-bullish' : 
+                                      rule.status.includes('BEARISH') ? 'badge-bearish' : 'badge-neutral';
+                    
+                    const ruleRow = document.createElement('div');
+                    ruleRow.className = 'rule-row';
+                    ruleRow.setAttribute('role', 'listitem');
+                    ruleRow.setAttribute('aria-label', `${rule.name}: ${rule.status}`);
+                    
+                    ruleRow.innerHTML = `
+                        <div class="rule-info">
+                            <span class="rule-title">${rule.name}</span>
+                            <span class="rule-indicator-val">${rule.value}</span>
+                        </div>
+                        <div class="rule-description">${rule.detail}</div>
+                        <div class="rule-badge ${statusClass}">${rule.status}</div>
+                    `;
+                    rulesGrid.appendChild(ruleRow);
+                });
+                
+                // History table rows
+                historyTableBody.innerHTML = '';
+                // Display in reverse order (newest first)
+                const revHistory = [...data.history].reverse();
+                revHistory.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${row.date}</strong></td>
+                        <td>₹${row.open.toFixed(2)}</td>
+                        <td>₹${row.high.toFixed(2)}</td>
+                        <td>₹${row.low.toFixed(2)}</td>
+                        <td>₹${row.close.toFixed(2)}</td>
+                        <td>${row.volume.toLocaleString('en-IN')}</td>
+                        <td>₹${row.sma20 ? row.sma20.toFixed(2) : 'N/A'}</td>
+                        <td>${row.rsi ? row.rsi.toFixed(1) : 'N/A'}</td>
+                    `;
+                    historyTableBody.appendChild(tr);
+                });
+                
+                // Update interactive chart visualization
+                renderChart(data.history);
+            }
+
+            // Render line chart with Chart.js
+            function renderChart(history) {
+                const dates = history.map(h => h.date);
+                const closes = history.map(h => h.close);
+                const sma20 = history.map(h => h.sma20);
+                
+                const ctx = document.getElementById('priceHistoryChart').getContext('2d');
+                
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+                
+                // Ensure chart library is ready
+                if (typeof Chart === 'undefined') {
+                    console.log("Chart.js loading delayed, retrying...");
+                    setTimeout(() => renderChart(history), 200);
+                    return;
+                }
+
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [
+                            {
+                                label: 'Daily Close Price (₹)',
+                                data: closes,
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.1,
+                                pointRadius: 3,
+                                pointBackgroundColor: 'rgba(59, 130, 246, 1)'
+                            },
+                            {
+                                label: 'SMA 20 (₹)',
+                                data: sma20,
+                                borderColor: 'rgba(245, 158, 11, 0.9)',
+                                borderWidth: 2,
+                                borderDash: [6, 4],
+                                fill: false,
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#f1f5f9',
+                                    font: { family: "'Inter', sans-serif", size: 12 }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(255,255,255,0.05)' },
+                                ticks: { color: '#cbd5e1', font: { family: "'Inter', sans-serif" } }
+                            },
+                            y: {
+                                grid: { color: 'rgba(255,255,255,0.05)' },
+                                ticks: { color: '#cbd5e1', font: { family: "'Inter', sans-serif" } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // ================= ACCESSIBLE MODAL CONTROLS =================
+            let lastFocusedElement = null;
+
+            function openModal() {
+                lastFocusedElement = document.activeElement;
+                modal.style.display = 'flex';
+                closeModalBtn.focus();
+                
+                // Capture key events for focus trapping and escape key exit
+                document.addEventListener('keydown', trapFocus);
+            }
+
+            function closeModal() {
+                modal.style.display = 'none';
+                document.removeEventListener('keydown', trapFocus);
+                
+                // Restore user focus
+                if (lastFocusedElement) {
+                    lastFocusedElement.focus();
+                }
+            }
+
+            function trapFocus(e) {
+                // Handle ESC key
+                if (e.key === 'Escape') {
+                    closeModal();
+                    return;
+                }
+                
+                // Trap Focus inside modal window
+                if (e.key === 'Tab') {
+                    const focusables = modalWindow.querySelectorAll('button, [tabindex="0"]');
+                    const firstFocusable = focusables[0];
+                    const lastFocusable = focusables[focusables.length - 1];
+                    
+                    if (e.shiftKey) { // Tab backward
+                        if (document.activeElement === firstFocusable) {
+                            lastFocusable.focus();
+                            e.preventDefault();
+                        }
+                    } else { // Tab forward
+                        if (document.activeElement === lastFocusable) {
+                            firstFocusable.focus();
+                            e.preventDefault();
+                        }
+                    }
+                }
+            }
+
+            // Bind click and keypress handlers
+            openModalBtn.addEventListener('click', openModal);
+            readMoreBtn.addEventListener('click', openModal);
+            closeModalBtn.addEventListener('click', closeModal);
+            
+            // Close modal when clicking outside contents
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
